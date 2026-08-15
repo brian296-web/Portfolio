@@ -861,6 +861,175 @@
     @media (prefers-reduced-motion:reduce){
       .scene-3d,.work-preview-grid::before,.work-preview-grid::after{display:none}
     }
+
+    /* FULL PAGE SCROLL 3D SYSTEM */
+    .page-3d-layer {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      perspective: 1400px;
+    }
+
+    .page-3d-object {
+      position: absolute;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+      opacity: .22;
+    }
+
+    .page-3d-object.cube {
+      width: 72px;
+      height: 72px;
+      right: 8%;
+      top: 14%;
+      border: 1px solid rgba(198,255,74,.35);
+      box-shadow: 22px 22px 0 -21px rgba(198,255,74,.55);
+    }
+
+    .page-3d-object.ring {
+      width: 110px;
+      height: 110px;
+      left: 4%;
+      top: 42%;
+      border: 1px solid rgba(118,231,255,.28);
+      border-radius: 50%;
+    }
+
+    .page-3d-object.diamond {
+      width: 52px;
+      height: 52px;
+      right: 13%;
+      top: 67%;
+      border: 1px solid rgba(255,255,255,.18);
+    }
+
+    .page-3d-object.prism {
+      width: 42px;
+      height: 150px;
+      left: 14%;
+      top: 79%;
+      border: 1px solid rgba(198,255,74,.22);
+      transform: skewY(-20deg) rotateX(55deg) rotateY(40deg);
+    }
+
+    .page-3d-object.dot {
+      width: 10px;
+      height: 10px;
+      left: 82%;
+      top: 52%;
+      border-radius: 50%;
+      background: var(--lime);
+      box-shadow: 0 0 45px 10px rgba(198,255,74,.12);
+    }
+
+    .page-3d-object.orbit {
+      width: 180px;
+      height: 180px;
+      left: 48%;
+      top: 88%;
+      border: 1px solid rgba(118,231,255,.12);
+      border-radius: 50%;
+      transform: rotateX(68deg);
+    }
+
+    /* Scroll-triggered entrance transition */
+    .scroll-reveal {
+      opacity: 0;
+      transform: translate3d(0, 80px, 0) rotateX(8deg) scale(.96);
+      transform-origin: center bottom;
+      filter: blur(5px);
+      transition:
+        opacity .9s cubic-bezier(.2,.7,.2,1),
+        transform 1.05s cubic-bezier(.16,1,.3,1),
+        filter .9s ease;
+      will-change: opacity, transform, filter;
+    }
+
+    .scroll-reveal.is-visible {
+      opacity: 1;
+      transform: translate3d(0,0,0) rotateX(0) scale(1);
+      filter: blur(0);
+    }
+
+    /* Cards get a stronger dimensional entrance */
+    .scroll-3d.scroll-reveal {
+      transform:
+        translate3d(0, 85px, 0)
+        perspective(1200px)
+        rotateX(12deg)
+        rotateY(-3deg)
+        scale(.94);
+    }
+
+    .scroll-3d.scroll-reveal.is-visible {
+      transform:
+        translate3d(var(--scroll-x,0px), var(--scroll-y,0px), 0)
+        perspective(1200px)
+        rotateX(var(--scroll-rotate-x,0deg))
+        rotateY(var(--scroll-rotate-y,0deg))
+        scale(var(--scroll-scale,1));
+    }
+
+    /* Section-level 3D depth */
+    .section {
+      position: relative;
+      transform-style: preserve-3d;
+      transform: perspective(1800px) rotateX(var(--section-rotate, 0deg)) translateZ(var(--section-depth, 0px));
+      transition: transform .25s linear;
+    }
+
+    .section::after {
+      content: "";
+      position: absolute;
+      width: 180px;
+      height: 180px;
+      right: -70px;
+      top: 20%;
+      border: 1px solid rgba(198,255,74,.045);
+      border-radius: 20%;
+      transform: rotateX(65deg) rotateZ(35deg);
+      pointer-events: none;
+    }
+
+    @media (max-width: 768px) {
+      .page-3d-layer { display: none; }
+
+      .scroll-reveal {
+        transform: translate3d(0, 42px, 0) scale(.985);
+        filter: blur(2px);
+      }
+
+      .scroll-3d.scroll-reveal {
+        transform:
+          translate3d(0,42px,0)
+          perspective(900px)
+          rotateX(5deg)
+          scale(.97);
+      }
+
+      .scroll-3d.scroll-reveal.is-visible {
+        transform:
+          translate3d(var(--scroll-x,0px),var(--scroll-y,0px),0)
+          perspective(900px)
+          rotateX(calc(var(--scroll-rotate-x,0deg) * .35))
+          rotateY(calc(var(--scroll-rotate-y,0deg) * .35))
+          scale(var(--scroll-scale,1));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .page-3d-layer { display:none; }
+      .scroll-reveal,
+      .scroll-3d.scroll-reveal {
+        opacity:1;
+        transform:none !important;
+        filter:none;
+        transition:none;
+      }
+    }
+
     /* MOBILE */
     @media (max-width: 900px) {
       .nav-links { display: none; }
@@ -899,6 +1068,15 @@
 </head>
 
 <body>
+  <div class="page-3d-layer" aria-hidden="true">
+    <span class="page-3d-object cube"></span>
+    <span class="page-3d-object ring"></span>
+    <span class="page-3d-object diamond"></span>
+    <span class="page-3d-object prism"></span>
+    <span class="page-3d-object dot"></span>
+    <span class="page-3d-object orbit"></span>
+  </div>
+
   <div class="cursor-light" aria-hidden="true"></div>
   <div class="scene-3d" aria-hidden="true">
     <span class="shape shape-cube"></span><span class="shape shape-ring"></span>
@@ -927,7 +1105,7 @@
       <div class="hero-orb two"></div>
 
       <div class="container hero-content">
-        <div class="hero-layout">
+        <div class="hero-layout scroll-reveal">
           <div>
             <div class="hero-status eyebrow">
               <span class="dot"></span>
@@ -965,7 +1143,7 @@
     <!-- ABOUT -->
     <section class="section">
       <div class="container">
-        <div class="section-head reveal scroll-3d">
+        <div class="section-head reveal scroll-reveal scroll-3d">
           <div>
             <div class="eyebrow">01 / About me</div>
             <h2 class="section-title">Creative work<br>with <em>systems behind it.</em></h2>
@@ -1003,9 +1181,9 @@
     </section>
 
     <!-- TOOLS -->
-    <section class="section" id="tools">
+    <section class="section scroll-reveal" id="tools">
       <div class="container">
-        <div class="section-head reveal scroll-3d">
+        <div class="section-head reveal scroll-reveal scroll-3d">
           <div>
             <div class="eyebrow">02 / Tools I use</div>
             <h2 class="section-title">My <em>toolkit.</em></h2>
@@ -1058,9 +1236,9 @@
     </section>
 
     <!-- SKILLS -->
-    <section class="section" id="skills">
+    <section class="section scroll-reveal" id="skills">
       <div class="container">
-        <div class="section-head reveal scroll-3d">
+        <div class="section-head reveal scroll-reveal scroll-3d">
           <div>
             <div class="eyebrow">03 / Skills</div>
             <h2 class="section-title">What I <em>do.</em></h2>
@@ -1104,9 +1282,9 @@
     </section>
 
     <!-- PAST WORK SAMPLES -->
-    <section class="section" id="work">
+    <section class="section scroll-reveal" id="work">
       <div class="container">
-        <div class="section-head reveal scroll-3d">
+        <div class="section-head reveal scroll-reveal scroll-3d">
           <div>
             <div class="eyebrow">04 / Past work samples</div>
             <h2 class="section-title">My <em>work.</em></h2>
@@ -1190,9 +1368,9 @@
     </section>
 
     <!-- CERTIFICATES -->
-    <section class="section" id="certificates">
+    <section class="section scroll-reveal" id="certificates">
       <div class="container">
-        <div class="section-head reveal scroll-3d">
+        <div class="section-head reveal scroll-reveal scroll-3d">
           <div>
             <div class="eyebrow">05 / Certificates</div>
             <h2 class="section-title">Proof of <em>learning.</em></h2>
@@ -1232,7 +1410,7 @@
           I’d love to hear about it.
         </p>
         <div class="contact-links">
-          <a class="btn primary" href="mailto:bvillena0596@gmail.com">Email me ↗</a>
+          <a class="btn primary" href="https://mail.google.com/mail/?view=cm&fs=1&to=bvillena0596@gmail.com" target="_blank" rel="noopener noreferrer">Email me ↗</a>
           <a class="btn" href="https://brian296-web.github.io/Resume/" target="_blank" rel="noopener">View resume ↗</a>
         </div>
       </div>
@@ -1365,6 +1543,78 @@
       requestAnimationFrame(updateScene3D);
     }
     updateScene3D();
+
+
+    // Scroll-triggered reveal observer
+    const revealElements = document.querySelectorAll(".scroll-reveal, .reveal");
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+        } else if (entry.boundingClientRect.top > 0) {
+          // Reset only when scrolling back toward an unrevealed section.
+          entry.target.classList.remove("is-visible");
+        }
+      });
+    }, {
+      threshold: 0.12,
+      rootMargin: "0px 0px -8% 0px"
+    });
+
+    revealElements.forEach((el) => revealObserver.observe(el));
+
+    // Full-page scroll-driven 3D geometry.
+    const pageObjects = document.querySelectorAll(".page-3d-object");
+    let pageScroll = 0;
+
+    function updatePage3D() {
+      pageScroll = window.scrollY || 0;
+
+      pageObjects.forEach((obj, index) => {
+        const speed = [0.035, 0.055, 0.075, 0.025, 0.095, 0.018][index] || .04;
+        const direction = index % 2 === 0 ? 1 : -1;
+        const x = Math.sin(pageScroll * .0012 + index) * (8 + index * 3);
+        const y = pageScroll * speed * direction;
+        const rx = 45 + Math.sin(pageScroll * .001 + index) * 25;
+        const ry = pageScroll * .06 * direction + index * 18;
+        const rz = pageScroll * .035 * direction;
+
+        obj.style.transform =
+          `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)
+           rotateX(${rx.toFixed(1)}deg)
+           rotateY(${ry.toFixed(1)}deg)
+           rotateZ(${rz.toFixed(1)}deg)`;
+      });
+    }
+
+    window.addEventListener("scroll", updatePage3D, { passive: true });
+    updatePage3D();
+
+    // Add a small depth response to each section based on viewport position.
+    const depthSections = document.querySelectorAll(".section");
+
+    function updateSectionDepth() {
+      const viewportCenter = window.innerHeight * .5;
+
+      depthSections.forEach((section, index) => {
+        const rect = section.getBoundingClientRect();
+        const center = rect.top + rect.height * .5;
+        const distance = Math.max(-1, Math.min(1,
+          (center - viewportCenter) / Math.max(window.innerHeight, 1)
+        ));
+
+        const rotate = distance * -1.8;
+        const translate = Math.abs(distance) * -7;
+
+        section.style.setProperty("--section-rotate", `${rotate.toFixed(2)}deg`);
+        section.style.setProperty("--section-depth", `${translate.toFixed(1)}px`);
+      });
+    }
+
+    window.addEventListener("scroll", updateSectionDepth, { passive: true });
+    window.addEventListener("resize", updateSectionDepth);
+    updateSectionDepth();
 
     // Footer year
     document.getElementById("year").textContent = new Date().getFullYear();
