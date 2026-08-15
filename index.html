@@ -1030,6 +1030,104 @@
       }
     }
 
+
+    /* ENHANCED SCROLL TRANSITIONS */
+    .scroll-fade {
+      opacity: 0;
+      transform: translate3d(0, 70px, 0) scale(.97);
+      filter: blur(8px);
+      transition:
+        opacity .85s cubic-bezier(.16,1,.3,1),
+        transform 1s cubic-bezier(.16,1,.3,1),
+        filter .8s ease;
+      will-change: opacity, transform, filter;
+    }
+
+    .scroll-fade.visible {
+      opacity: 1;
+      transform: translate3d(0,0,0) scale(1);
+      filter: blur(0);
+    }
+
+    .scroll-slide-left {
+      opacity: 0;
+      transform: translate3d(-80px, 30px, 0) rotateY(7deg);
+      transition:
+        opacity .9s ease,
+        transform 1.05s cubic-bezier(.16,1,.3,1);
+      will-change: opacity, transform;
+    }
+
+    .scroll-slide-right {
+      opacity: 0;
+      transform: translate3d(80px, 30px, 0) rotateY(-7deg);
+      transition:
+        opacity .9s ease,
+        transform 1.05s cubic-bezier(.16,1,.3,1);
+      will-change: opacity, transform;
+    }
+
+    .scroll-slide-left.visible,
+    .scroll-slide-right.visible {
+      opacity: 1;
+      transform: translate3d(0,0,0) rotateY(0);
+    }
+
+    .scroll-scale {
+      opacity: 0;
+      transform: perspective(1200px) translateZ(-90px) scale(.82) rotateX(7deg);
+      transition:
+        opacity .9s ease,
+        transform 1.1s cubic-bezier(.16,1,.3,1);
+      will-change: opacity, transform;
+    }
+
+    .scroll-scale.visible {
+      opacity: 1;
+      transform: perspective(1200px) translateZ(0) scale(1) rotateX(0);
+    }
+
+    /* Continuous viewport parallax for selected visual elements */
+    .parallax-scroll {
+      --parallax-y: 0px;
+      --parallax-rotate: 0deg;
+      transform: translate3d(0,var(--parallax-y),0) rotate(var(--parallax-rotate));
+      will-change: transform;
+    }
+
+    /* Stagger children as they enter */
+    .stagger > * {
+      --stagger-delay: 0ms;
+      transition-delay: var(--stagger-delay);
+    }
+
+    @media (max-width: 768px) {
+      .scroll-slide-left,
+      .scroll-slide-right {
+        transform: translate3d(0,45px,0);
+      }
+
+      .scroll-scale {
+        transform: scale(.94);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .scroll-fade,
+      .scroll-slide-left,
+      .scroll-slide-right,
+      .scroll-scale {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+        transition: none !important;
+      }
+
+      .parallax-scroll {
+        transform: none !important;
+      }
+    }
+
     /* MOBILE */
     @media (max-width: 900px) {
       .nav-links { display: none; }
@@ -1105,7 +1203,7 @@
       <div class="hero-orb two"></div>
 
       <div class="container hero-content">
-        <div class="hero-layout scroll-reveal">
+        <div class="hero-layout scroll-scale">
           <div>
             <div class="hero-status eyebrow">
               <span class="dot"></span>
@@ -1170,10 +1268,10 @@
               or preparing content for publishing.
             </p>
 
-            <div class="about-facts">
-              <div class="fact"><strong>11+</strong><span>Years experience</span></div>
-              <div class="fact"><strong>AI</strong><span>Creative production</span></div>
-              <div class="fact"><strong>CRM</strong><span>Automation & funnels</span></div>
+            <div class="about-facts stagger">
+              <div class="fact scroll-fade"><strong>11+</strong><span>Years experience</span></div>
+              <div class="fact scroll-fade"><strong>AI</strong><span>Creative production</span></div>
+              <div class="fact scroll-fade"><strong>CRM</strong><span>Automation & funnels</span></div>
             </div>
           </div>
         </div>
@@ -1181,7 +1279,7 @@
     </section>
 
     <!-- TOOLS -->
-    <section class="section scroll-reveal" id="tools">
+    <section class="section scroll-reveal scroll-fade" id="tools">
       <div class="container">
         <div class="section-head reveal scroll-reveal scroll-3d">
           <div>
@@ -1195,48 +1293,48 @@
 
         <div class="tool-group reveal">
           <h3>Marketing / CRM / Automation</h3>
-          <div class="tool-cloud">
-            <span class="tool">GoHighLevel</span>
-            <span class="tool">Kartra</span>
-            <span class="tool">ActiveCampaign</span>
-            <span class="tool">Zapier</span>
-            <span class="tool">APIway</span>
-            <span class="tool">Teachable</span>
-            <span class="tool">SocialBee</span>
+          <div class="tool-cloud stagger">
+            <span class="tool scroll-fade">GoHighLevel</span>
+            <span class="tool scroll-fade">Kartra</span>
+            <span class="tool scroll-fade">ActiveCampaign</span>
+            <span class="tool scroll-fade">Zapier</span>
+            <span class="tool scroll-fade">APIway</span>
+            <span class="tool scroll-fade">Teachable</span>
+            <span class="tool scroll-fade">SocialBee</span>
           </div>
         </div>
 
         <div class="tool-group reveal">
           <h3>Creative / AI</h3>
           <div class="tool-cloud">
-            <span class="tool">Adobe Premiere Pro</span>
-            <span class="tool">Photoshop</span>
-            <span class="tool">Illustrator</span>
-            <span class="tool">Canva</span>
-            <span class="tool">CapCut</span>
-            <span class="tool">Higgsfield</span>
-            <span class="tool">Seedance</span>
-            <span class="tool">Claude</span>
-            <span class="tool">ChatGPT</span>
+            <span class="tool scroll-fade">Adobe Premiere Pro</span>
+            <span class="tool scroll-fade">Photoshop</span>
+            <span class="tool scroll-fade">Illustrator</span>
+            <span class="tool scroll-fade">Canva</span>
+            <span class="tool scroll-fade">CapCut</span>
+            <span class="tool scroll-fade">Higgsfield</span>
+            <span class="tool scroll-fade">Seedance</span>
+            <span class="tool scroll-fade">Claude</span>
+            <span class="tool scroll-fade">ChatGPT</span>
           </div>
         </div>
 
         <div class="tool-group reveal">
           <h3>Productivity / Communication</h3>
           <div class="tool-cloud">
-            <span class="tool">Google Workspace</span>
-            <span class="tool">Google Calendar</span>
-            <span class="tool">Calendly</span>
-            <span class="tool">Zoom</span>
-            <span class="tool">Slack</span>
-            <span class="tool">Google Analytics</span>
+            <span class="tool scroll-fade">Google Workspace</span>
+            <span class="tool scroll-fade">Google Calendar</span>
+            <span class="tool scroll-fade">Calendly</span>
+            <span class="tool scroll-fade">Zoom</span>
+            <span class="tool scroll-fade">Slack</span>
+            <span class="tool scroll-fade">Google Analytics</span>
           </div>
         </div>
       </div>
     </section>
 
     <!-- SKILLS -->
-    <section class="section scroll-reveal" id="skills">
+    <section class="section scroll-reveal scroll-fade" id="skills">
       <div class="container">
         <div class="section-head reveal scroll-reveal scroll-3d">
           <div>
@@ -1246,33 +1344,33 @@
           <p class="section-copy">A mix of creative, technical, marketing, and operational skills.</p>
         </div>
 
-        <div class="skills-grid">
-          <article class="skill reveal scroll-3d">
+        <div class="skills-grid stagger">
+          <article class="skill scroll-fade reveal scroll-3d">
             <span class="skill-num">01</span>
             <h3>AI Creative Production</h3>
             <p>AI-generated ads, UGC-style concepts, VSL scripts, scene prompts, creative iteration, and production workflows.</p>
           </article>
-          <article class="skill reveal scroll-3d">
+          <article class="skill scroll-fade reveal scroll-3d">
             <span class="skill-num">02</span>
             <h3>Video Editing</h3>
             <p>Reels, short-form content, product walkthroughs, client demos, UGC-style ads, and social video editing.</p>
           </article>
-          <article class="skill reveal scroll-3d">
+          <article class="skill scroll-fade reveal scroll-3d">
             <span class="skill-num">03</span>
             <h3>Social Media</h3>
             <p>Content planning, daily publishing calendars, creative repurposing, captions, graphics, and performance tracking.</p>
           </article>
-          <article class="skill reveal scroll-3d">
+          <article class="skill scroll-fade reveal scroll-3d">
             <span class="skill-num">04</span>
             <h3>Email Marketing</h3>
             <p>Broadcasts, resends, autoresponders, segmentation, timing, subject-line testing, and email KPI monitoring.</p>
           </article>
-          <article class="skill reveal scroll-3d">
+          <article class="skill scroll-fade reveal scroll-3d">
             <span class="skill-num">05</span>
             <h3>CRM & Funnels</h3>
             <p>GoHighLevel and Kartra workflows, landing pages, sales funnels, membership sites, pipelines, and automation.</p>
           </article>
-          <article class="skill reveal scroll-3d">
+          <article class="skill scroll-fade reveal scroll-3d">
             <span class="skill-num">06</span>
             <h3>Marketing Operations</h3>
             <p>Campaign coordination, analytics, reporting, scheduling, client onboarding, research, and operational support.</p>
@@ -1282,7 +1380,7 @@
     </section>
 
     <!-- PAST WORK SAMPLES -->
-    <section class="section scroll-reveal" id="work">
+    <section class="section scroll-reveal scroll-fade" id="work">
       <div class="container">
         <div class="section-head reveal scroll-reveal scroll-3d">
           <div>
@@ -1295,22 +1393,22 @@
         </div>
 
         <div class="work-preview-grid reveal">
-          <a class="preview-card preview-video scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
+          <a class="preview-card scroll-fade preview-video scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
             <span class="preview-no">01</span><span class="preview-icon">▶</span>
             <div><span class="preview-label">CREATIVE / VIDEO</span><h3>Video &amp; Reels</h3><p>Short-form edits, promotional content, social creatives and visual storytelling.</p></div>
             <span class="preview-arrow">↗</span>
           </a>
-          <a class="preview-card preview-design scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
+          <a class="preview-card scroll-fade preview-design scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
             <span class="preview-no">02</span><span class="preview-icon">✦</span>
             <div><span class="preview-label">DESIGN / SOCIAL</span><h3>Social Content</h3><p>Branded graphics, social media assets, campaigns and content systems.</p></div>
             <span class="preview-arrow">↗</span>
           </a>
-          <a class="preview-card preview-ai scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
+          <a class="preview-card scroll-fade preview-ai scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
             <span class="preview-no">03</span><span class="preview-icon">AI</span>
             <div><span class="preview-label">AI / PAID ADS</span><h3>AI Creative</h3><p>AI-assisted ad concepts, creative variations and performance-focused visuals.</p></div>
             <span class="preview-arrow">↗</span>
           </a>
-          <a class="preview-card preview-growth scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
+          <a class="preview-card scroll-fade preview-growth scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
             <span class="preview-no">04</span><span class="preview-icon">↗</span>
             <div><span class="preview-label">MARKETING / AUTOMATION</span><h3>Funnels &amp; Email</h3><p>Email campaigns, automation, landing pages and CRM-driven workflows.</p></div>
             <span class="preview-arrow">↗</span>
@@ -1368,7 +1466,7 @@
     </section>
 
     <!-- CERTIFICATES -->
-    <section class="section scroll-reveal" id="certificates">
+    <section class="section scroll-reveal scroll-fade" id="certificates">
       <div class="container">
         <div class="section-head reveal scroll-reveal scroll-3d">
           <div>
@@ -1378,20 +1476,20 @@
           <p class="section-copy">Selected training and certifications supporting my creative and marketing skill set.</p>
         </div>
 
-        <div class="cert-grid">
-          <article class="cert reveal scroll-3d">
+        <div class="cert-grid stagger">
+          <article class="cert scroll-fade reveal scroll-3d">
             <small>01 / CREATIVE</small>
             <h3>Advanced Premiere Pro Master Class</h3>
             <span>Graphics Media Training PH</span>
           </article>
 
-          <article class="cert reveal scroll-3d">
+          <article class="cert scroll-fade reveal scroll-3d">
             <small>02 / MARKETING</small>
             <h3>SEO Online Course</h3>
             <span>ProVA</span>
           </article>
 
-          <article class="cert reveal scroll-3d">
+          <article class="cert scroll-fade reveal scroll-3d">
             <small>03 / SOCIAL</small>
             <h3>Social Media VA Course</h3>
             <span>Freelance Academy</span>
@@ -1615,6 +1713,78 @@
     window.addEventListener("scroll", updateSectionDepth, { passive: true });
     window.addEventListener("resize", updateSectionDepth);
     updateSectionDepth();
+
+
+    // Enhanced scroll-based animation system
+    const animatedScrollItems = document.querySelectorAll(
+      ".scroll-fade, .scroll-slide-left, .scroll-slide-right, .scroll-scale, .scroll-reveal"
+    );
+
+    animatedScrollItems.forEach((el) => {
+      el.classList.remove("visible", "is-visible");
+    });
+
+    const scrollAnimationObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("visible", "is-visible");
+        }
+      });
+    }, {
+      threshold: 0.08,
+      rootMargin: "0px 0px -10% 0px"
+    });
+
+    animatedScrollItems.forEach((el) => scrollAnimationObserver.observe(el));
+
+    // Stagger grids/cards based on their order.
+    document.querySelectorAll(".stagger").forEach((group) => {
+      [...group.children].forEach((child, index) => {
+        child.style.setProperty(
+          "--stagger-delay",
+          `${Math.min(index * 70, 420)}ms`
+        );
+      });
+    });
+
+    // Continuous parallax based on distance from viewport center.
+    const parallaxItems = document.querySelectorAll(
+      ".parallax-scroll, .shape, .page-3d-object"
+    );
+
+    function updateScrollParallax() {
+      const viewportCenter = window.innerHeight * 0.5;
+
+      parallaxItems.forEach((el, index) => {
+        const rect = el.getBoundingClientRect();
+        const center = rect.top + rect.height * 0.5;
+        const normalized = Math.max(
+          -1,
+          Math.min(1, (center - viewportCenter) / Math.max(window.innerHeight, 1))
+        );
+
+        const strength = 12 + (index % 5) * 7;
+        const y = normalized * strength;
+        const rotation = normalized * (1.2 + (index % 3) * .8);
+
+        el.style.setProperty("--parallax-y", `${y.toFixed(2)}px`);
+        el.style.setProperty("--parallax-rotate", `${rotation.toFixed(2)}deg`);
+      });
+    }
+
+    let parallaxTick = false;
+    window.addEventListener("scroll", () => {
+      if (!parallaxTick) {
+        requestAnimationFrame(() => {
+          updateScrollParallax();
+          parallaxTick = false;
+        });
+        parallaxTick = true;
+      }
+    }, { passive: true });
+
+    window.addEventListener("resize", updateScrollParallax);
+    updateScrollParallax();
 
     // Footer year
     document.getElementById("year").textContent = new Date().getFullYear();
