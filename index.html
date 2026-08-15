@@ -781,6 +781,86 @@
       }
     }
 
+    /* 3D WORK GALLERY */
+    .work-preview-grid {
+      position: relative; display: grid; grid-template-columns: repeat(12,1fr);
+      gap: 12px; margin-bottom: 24px; perspective: 1400px;
+    }
+    .work-preview-grid::before,.work-preview-grid::after {
+      content:""; position:absolute; pointer-events:none; border:1px solid rgba(198,255,74,.14);
+      transform:rotateX(64deg) rotateZ(-12deg); transform-style:preserve-3d;
+    }
+    .work-preview-grid::before {
+      width:120px;height:120px;right:7%;top:-40px;border-radius:24%;
+      box-shadow:0 0 70px rgba(198,255,74,.08);animation:floatCube 8s ease-in-out infinite;
+    }
+    .work-preview-grid::after {
+      width:65px;height:65px;left:5%;bottom:-30px;border-radius:50%;
+      border-color:rgba(118,231,255,.16);animation:floatOrb 7s ease-in-out infinite reverse;
+    }
+    .preview-card {
+      position:relative; min-height:285px; grid-column:span 6; padding:27px;
+      overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end;
+      text-decoration:none;color:inherit;border:1px solid var(--line);
+      background:linear-gradient(145deg,rgba(255,255,255,.065),rgba(255,255,255,.012)),var(--surface);
+      transform-style:preserve-3d;transition:border-color .35s,box-shadow .35s;
+      isolation:isolate;
+    }
+    .preview-card:nth-child(1){grid-column:span 7}.preview-card:nth-child(2){grid-column:span 5}
+    .preview-card:nth-child(3){grid-column:span 5}.preview-card:nth-child(4){grid-column:span 7}
+    .preview-card::before {
+      content:"";position:absolute;width:220px;height:220px;border-radius:50%;
+      top:-100px;right:-80px;background:radial-gradient(circle,rgba(198,255,74,.17),transparent 68%);
+      filter:blur(5px);transform:translateZ(35px);transition:transform .5s;
+    }
+    .preview-card::after {
+      content:"";position:absolute;inset:0;z-index:-1;opacity:.25;
+      background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.06) 26%,transparent 27%);
+      background-size:42px 42px;mask-image:linear-gradient(to bottom,black,transparent);
+    }
+    .preview-card:hover {
+      border-color:rgba(198,255,74,.45);
+      box-shadow:0 35px 90px rgba(0,0,0,.35),0 0 55px rgba(198,255,74,.06);
+    }
+    .preview-card:hover::before{transform:translate3d(-18px,22px,75px) scale(1.2)}
+    .preview-no,.preview-label,.preview-icon,.preview-arrow,.preview-card h3,.preview-card p {
+      transform:translateZ(45px);position:relative;
+    }
+    .preview-no{position:absolute;left:27px;top:24px;font:500 .65rem "DM Mono",monospace;color:#6d7179}
+    .preview-icon {
+      position:absolute;right:25px;top:22px;width:48px;height:48px;display:grid;place-items:center;
+      border:1px solid rgba(255,255,255,.11);border-radius:50%;color:var(--lime);
+      font:700 .65rem "DM Mono",monospace;background:rgba(0,0,0,.18);
+    }
+    .preview-label{display:block;margin-bottom:9px;color:var(--lime);font:500 .62rem "DM Mono",monospace;letter-spacing:.08em}
+    .preview-card h3{margin:0 0 10px;font-size:clamp(1.6rem,3vw,2.7rem);line-height:.9;letter-spacing:-.06em}
+    .preview-card p{max-width:440px;margin:0;color:#8d9098;font-size:.76rem;line-height:1.55}
+    .preview-arrow{position:absolute;right:25px;bottom:23px;color:#777b84;font-size:1rem;transition:.25s}
+    .preview-card:hover .preview-arrow{color:var(--lime);transform:translate3d(5px,-5px,60px)}
+    .preview-video{background:radial-gradient(circle at 70% 20%,rgba(118,231,255,.08),transparent 30%),var(--surface)}
+    .preview-design{background:radial-gradient(circle at 30% 30%,rgba(198,255,74,.07),transparent 35%),var(--surface)}
+    .preview-ai{background:radial-gradient(circle at 80% 75%,rgba(118,231,255,.07),transparent 35%),var(--surface)}
+    .preview-growth{background:radial-gradient(circle at 25% 75%,rgba(198,255,74,.07),transparent 35%),var(--surface)}
+    @keyframes floatCube{0%,100%{transform:translateY(0) rotateX(64deg) rotateZ(-12deg)}50%{transform:translateY(-18px) rotateX(72deg) rotateZ(8deg)}}
+    @keyframes floatOrb{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(15px) scale(1.15)}}
+
+    /* FLOATING 3D SCENE */
+    .scene-3d{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;perspective:1200px}
+    .shape{position:absolute;display:block;transform-style:preserve-3d;opacity:.28;will-change:transform}
+    .shape-cube{width:54px;height:54px;right:6%;top:26%;border:1px solid rgba(198,255,74,.24);box-shadow:18px 18px 0 -17px rgba(198,255,74,.35)}
+    .shape-ring{width:90px;height:90px;left:4%;top:61%;border:1px solid rgba(118,231,255,.22);border-radius:50%}
+    .shape-diamond{width:42px;height:42px;right:20%;top:72%;border:1px solid rgba(255,255,255,.13)}
+    .shape-dot{width:8px;height:8px;left:15%;top:31%;border-radius:50%;background:var(--lime);box-shadow:0 0 35px 8px rgba(198,255,74,.09)}
+    /* MOBILE 3D GALLERY */
+    @media (max-width:768px){
+      .work-preview-grid{grid-template-columns:1fr;gap:10px}
+      .preview-card,.preview-card:nth-child(n){grid-column:1/-1;min-height:285px}
+      .preview-card h3{font-size:clamp(1.7rem,9vw,2.5rem)}
+      .scene-3d{display:none}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .scene-3d,.work-preview-grid::before,.work-preview-grid::after{display:none}
+    }
     /* MOBILE */
     @media (max-width: 900px) {
       .nav-links { display: none; }
@@ -820,6 +900,10 @@
 
 <body>
   <div class="cursor-light" aria-hidden="true"></div>
+  <div class="scene-3d" aria-hidden="true">
+    <span class="shape shape-cube"></span><span class="shape shape-ring"></span>
+    <span class="shape shape-diamond"></span><span class="shape shape-dot"></span>
+  </div>
   <nav>
     <div class="container nav-inner">
       <a href="#top" class="logo">GB<span>.</span>VILLENA</a>
@@ -1032,6 +1116,29 @@
           </p>
         </div>
 
+        <div class="work-preview-grid reveal">
+          <a class="preview-card preview-video scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
+            <span class="preview-no">01</span><span class="preview-icon">▶</span>
+            <div><span class="preview-label">CREATIVE / VIDEO</span><h3>Video &amp; Reels</h3><p>Short-form edits, promotional content, social creatives and visual storytelling.</p></div>
+            <span class="preview-arrow">↗</span>
+          </a>
+          <a class="preview-card preview-design scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
+            <span class="preview-no">02</span><span class="preview-icon">✦</span>
+            <div><span class="preview-label">DESIGN / SOCIAL</span><h3>Social Content</h3><p>Branded graphics, social media assets, campaigns and content systems.</p></div>
+            <span class="preview-arrow">↗</span>
+          </a>
+          <a class="preview-card preview-ai scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
+            <span class="preview-no">03</span><span class="preview-icon">AI</span>
+            <div><span class="preview-label">AI / PAID ADS</span><h3>AI Creative</h3><p>AI-assisted ad concepts, creative variations and performance-focused visuals.</p></div>
+            <span class="preview-arrow">↗</span>
+          </a>
+          <a class="preview-card preview-growth scroll-3d" href="https://drive.google.com/drive/folders/1YJ0qFgBMhz2FCLERCBc_WMue30PxI_O1?usp=drive_link" target="_blank" rel="noopener">
+            <span class="preview-no">04</span><span class="preview-icon">↗</span>
+            <div><span class="preview-label">MARKETING / AUTOMATION</span><h3>Funnels &amp; Email</h3><p>Email campaigns, automation, landing pages and CRM-driven workflows.</p></div>
+            <span class="preview-arrow">↗</span>
+          </a>
+        </div>
+
         <div class="drive-shell reveal scroll-3d">
           <div class="drive-topbar">
             <div>
@@ -1240,6 +1347,24 @@
 
     window.addEventListener("scroll", updateHeroDepth, { passive: true });
     updateHeroDepth();
+
+    // Global 3D scene: pointer + scroll depth
+    const sceneShapes = document.querySelectorAll(".scene-3d .shape");
+    let pointerX = .5, pointerY = .5;
+    window.addEventListener("pointermove", e => {
+      pointerX = e.clientX / Math.max(innerWidth,1);
+      pointerY = e.clientY / Math.max(innerHeight,1);
+    }, {passive:true});
+    function updateScene3D(){
+      const scroll=scrollY||0;
+      sceneShapes.forEach((shape,i)=>{
+        const depth=(i+1)*.55, px=(pointerX-.5)*24*depth, py=(pointerY-.5)*18*depth;
+        const sy=scroll*(.018+i*.006), r=scroll*(.025+i*.012);
+        shape.style.transform=`translate3d(${px.toFixed(1)}px,${(py-sy).toFixed(1)}px,0) rotateX(${55+r}deg) rotateY(${25+r*1.4}deg) rotateZ(${r}deg)`;
+      });
+      requestAnimationFrame(updateScene3D);
+    }
+    updateScene3D();
 
     // Footer year
     document.getElementById("year").textContent = new Date().getFullYear();
