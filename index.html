@@ -125,14 +125,51 @@ h2 {
   flex-direction: column;
 }
 .hero canvas.scene { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+@property --ang { syntax: '<angle>'; inherits: false; initial-value: 0deg; }
+@keyframes raysspin { to { --ang: 360deg; } }
+@keyframes raysbreathe {
+  from { opacity: 0.45; scale: 0.96; }
+  to { opacity: 1; scale: 1.06; }
+}
 .rays {
-  position: absolute; inset: 0; z-index: 1; pointer-events: none;
-  background: conic-gradient(from 180deg at 54% -6%,
-    transparent 0deg, rgba(236, 220, 140, 0.11) 3deg, transparent 7deg,
-    rgba(236, 220, 140, 0.06) 11deg, transparent 15deg,
-    rgba(236, 220, 140, 0.09) 20deg, transparent 26deg,
-    transparent 334deg, rgba(236, 220, 140, 0.07) 340deg, transparent 345deg,
-    rgba(236, 220, 140, 0.1) 351deg, transparent 357deg);
+  position: absolute; inset: -12% -8% 0; z-index: 1; pointer-events: none;
+  transform-origin: 54% 0%; will-change: transform;
+  animation: raysspin 70s linear infinite, raysbreathe 6s ease-in-out infinite alternate;
+  background: conic-gradient(from var(--ang) at 54% -6%,
+    transparent 0deg,
+    rgba(236, 220, 140, 0.11) 3deg,
+    transparent 9deg,
+    rgba(236, 220, 140, 0.06) 17deg,
+    transparent 23deg,
+    rgba(236, 220, 140, 0.09) 36deg,
+    transparent 42deg,
+    rgba(236, 220, 140, 0.07) 58deg,
+    transparent 64deg,
+    rgba(236, 220, 140, 0.1) 78deg,
+    transparent 84deg,
+    rgba(236, 220, 140, 0.06) 102deg,
+    transparent 108deg,
+    rgba(236, 220, 140, 0.1) 125deg,
+    transparent 131deg,
+    rgba(236, 220, 140, 0.07) 150deg,
+    transparent 156deg,
+    rgba(236, 220, 140, 0.09) 171deg,
+    transparent 177deg,
+    rgba(236, 220, 140, 0.06) 196deg,
+    transparent 202deg,
+    rgba(236, 220, 140, 0.1) 222deg,
+    transparent 228deg,
+    rgba(236, 220, 140, 0.07) 248deg,
+    transparent 254deg,
+    rgba(236, 220, 140, 0.09) 270deg,
+    transparent 276deg,
+    rgba(236, 220, 140, 0.06) 296deg,
+    transparent 302deg,
+    rgba(236, 220, 140, 0.1) 322deg,
+    transparent 328deg,
+    rgba(236, 220, 140, 0.07) 346deg,
+    transparent 352deg,
+    transparent 360deg);
   -webkit-mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.5) 45%, transparent 75%);
   mask-image: linear-gradient(to bottom, #000 0%, rgba(0, 0, 0, 0.5) 45%, transparent 75%);
 }
@@ -833,6 +870,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     path.frustumCulled = false;
     scene.add(path);
 
+
     var state = { p: reduce ? 0.12 : 0 }, needs = true, last = 0, time = 0;
     function updScale() { U.uScale.value = renderer.domElement.height / (2 * Math.tan(camera.fov * Math.PI / 360)); }
     function resize() {
@@ -1072,6 +1110,10 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
       y: -70, opacity: 0, rotationX: 16, transformPerspective: 900, transformOrigin: '50% 100%', ease: 'none',
       scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom 30%', scrub: 0.9 }
     });
+    gsap.to('.rays', {
+      yPercent: -14, scale: 1.12, ease: 'none',
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1 }
+    });
     var rail = document.getElementById('rail');
     gsap.fromTo(rail, { '--p': 0 }, {
       '--p': 1, ease: 'none',
@@ -1087,29 +1129,4 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     /* Work cards: fly in from depth as the section scrolls into view, fanning out one after another. */
     var workSlots = gsap.utils.toArray('#track .slot').slice(CARDS, CARDS * 2);
     gsap.set(workSlots, { transformPerspective: 900, transformOrigin: '50% 60%' });
-    gsap.timeline({ scrollTrigger: { trigger: '#track', start: 'top 98%', end: 'top 18%', scrub: 1.6 } })
-      .fromTo(workSlots, { rotationY: 46, rotationX: 10, z: -240, x: 110, opacity: 0 },
-        { rotationY: 0, rotationX: 0, z: 0, x: 0, opacity: 1, ease: 'sine.out', stagger: 0.1, duration: 1 }, 0);
-    gsap.fromTo('.work-head', { y: 40, opacity: 0.2 }, {
-      y: 0, opacity: 1, ease: 'none',
-      scrollTrigger: { trigger: '.work-head', start: 'top 100%', end: 'top 55%', scrub: 1.2 }
-    });
-    gsap.fromTo('#wordmark', { yPercent: 24 }, {
-      yPercent: 0, ease: 'none',
-      scrollTrigger: { trigger: '#contact', start: 'top 70%', end: 'bottom bottom', scrub: true }
-    });
-  }
-  if (reduce) { Array.prototype.forEach.call(document.getElementById('rail').children, function (li) { li.classList.add('on'); }); document.getElementById('rail').style.setProperty('--p', '1'); }
-
-  /* ---------- Start ---------- */
-  try { scene3d = init3D(); } catch (e) { scene3d = null; startFallback(); }
-  applyTheme();
-  scrollFx();
-  fitWord();
-  startMiddle();
-  updateCarousel();
-  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitWord(); paintStatic(); if (hasGsap) ScrollTrigger.refresh(); });
-})();
-</script>
-
-</body></html>
+    gsap.timeline({ s
