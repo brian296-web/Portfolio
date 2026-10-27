@@ -229,11 +229,11 @@ h2 {
 .work > .wrap { position: relative; z-index: 1; }
 .work-head { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1.25rem 4rem; align-items: end; margin-bottom: clamp(2rem, 5vw, 3.25rem); }
 .track {
-  display: flex; gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory;
+  display: flex; gap: 1.25rem; overflow-x: auto;
   padding-block: 1.5rem 2rem; margin-block: -1.25rem -0.75rem; scrollbar-width: none; overscroll-behavior-x: contain;
 }
 .track::-webkit-scrollbar { display: none; }
-.slot { flex: 0 0 clamp(250px, 26vw, 330px); height: clamp(390px, 46vw, 460px); scroll-snap-align: center; perspective: 900px; }
+.slot { flex: 0 0 clamp(250px, 26vw, 330px); height: clamp(390px, 46vw, 460px); perspective: 900px; }
 .card {
   position: relative; isolation: isolate; overflow: hidden; width: 100%; height: 100%;
   border-radius: 16px; background: var(--card); color: var(--night-fg);
@@ -1027,13 +1027,20 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     requestAnimationFrame(function () { ticking = false; updateCarousel(); });
   }, { passive: true });
   /* When scrolling settles outside the middle set, jump one set over. The copies look identical, so nothing visibly moves. */
-  var recentre = 0;
+  var recentre = 0, fingerDown = false;
+  ['pointerdown', 'touchstart'].forEach(function (ev) { track.addEventListener(ev, function () { fingerDown = true; }, { passive: true }); });
+  ['pointerup', 'pointercancel', 'touchend', 'touchcancel'].forEach(function (ev) { window.addEventListener(ev, function () { fingerDown = false; clearTimeout(recentre); recentre = setTimeout(function () { track.dispatchEvent(new Event('scroll')); }, 120); }, { passive: true }); });
   track.addEventListener('scroll', function () {
     clearTimeout(recentre);
     recentre = setTimeout(function () {
       var w = setW();
       if (track.scrollLeft < w * 0.5) track.scrollLeft += w;
       else if (track.scrollLeft > w * 1.5) track.scrollLeft -= w;
+      /* Own settle instead of CSS snap: CSS snap points follow the entrance transforms, which made the row re-adjust while the page scrolled. */
+      if (!fingerDown) {
+        var tgt = setW() + Math.round((track.scrollLeft + cOff() - setW()) / stepW()) * stepW() - cOff(), diff = tgt - track.scrollLeft;
+        if (Math.abs(diff) > 1.5) glide(diff);
+      }
     }, 160);
   }, { passive: true });
   function startMiddle() { track.style.scrollSnapType = 'none'; track.scrollLeft = setW() - cOff(); track.style.scrollSnapType = ''; }
@@ -1141,6 +1148,11 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     gsap.timeline({ scrollTrigger: { trigger: '#track', start: 'top 98%', end: 'top 18%', scrub: 1.6 } })
       .fromTo(workSlots, { rotationY: 46, rotationX: 10, z: -240, x: 110, opacity: 0 },
         { rotationY: 0, rotationX: 0, z: 0, x: 0, opacity: 1, ease: 'sine.out', stagger: 0.1, duration: 1 }, 0);
+    /* The front card fades in quickly, early in the approach, so it is already there while the others fan out. */
+    gsap.fromTo(gsap.utils.toArray('#track .slot')[CARDS], { opacity: 0 }, {
+      opacity: 1, ease: 'none',
+      scrollTrigger: { trigger: '#track', start: 'top 100%', end: 'top 70%', scrub: 0.8 }
+    });
     gsap.fromTo('.work-head', { y: 40, opacity: 0.2 }, {
       y: 0, opacity: 1, ease: 'none',
       scrollTrigger: { trigger: '.work-head', start: 'top 100%', end: 'top 55%', scrub: 1.2 }
