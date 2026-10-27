@@ -193,7 +193,7 @@ h2 {
 .work-head { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1.25rem 4rem; align-items: end; margin-bottom: clamp(2rem, 5vw, 3.25rem); }
 .track {
   display: flex; gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory;
-  padding-block: 0.25rem 1.25rem; scrollbar-width: none; overscroll-behavior-x: contain;
+  padding-block: 1.5rem 2rem; margin-block: -1.25rem -0.75rem; scrollbar-width: none; overscroll-behavior-x: contain;
 }
 .track::-webkit-scrollbar { display: none; }
 .slot { flex: 0 0 clamp(250px, 26vw, 330px); height: clamp(390px, 46vw, 460px); scroll-snap-align: start; perspective: 900px; }
@@ -948,12 +948,14 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
   function stepW() { return slots.length > 1 ? slots[1].offsetLeft - slots[0].offsetLeft : track.clientWidth; }
   function tilt() {
     if (reduce) return;
-    var half = track.clientWidth / 2, base = track.offsetLeft;
+    /* Swing-door depth: the front card stays flat, cards to the right hinge away from it, the card you just passed swings out behind. */
+    var st = stepW(), first = slots[0].offsetLeft;
     slots.forEach(function (s) {
-      var centre = s.offsetLeft - base - track.scrollLeft + s.offsetWidth / 2;
-      var dxn = Math.max(-1.4, Math.min(1.4, (centre - half) / half));
-      var card = s.firstElementChild;
-      card.style.transform = 'rotateY(' + (-dxn * 20).toFixed(2) + 'deg) translateZ(' + (-Math.abs(dxn) * 70).toFixed(1) + 'px)';
+      var d = Math.max(-1.6, Math.min(2.4, (s.offsetLeft - first - track.scrollLeft) / st));
+      var a = Math.abs(d), card = s.firstElementChild;
+      card.style.transformOrigin = d >= 0 ? '0% 50%' : '100% 50%';
+      card.style.transform = 'rotateY(' + (-d * 34).toFixed(2) + 'deg) translateZ(' + (-a * 110).toFixed(1) + 'px) scale(' + (1 - Math.min(a, 1.5) * 0.05).toFixed(3) + ')';
+      card.style.opacity = Math.max(0.35, 1 - a * 0.22).toFixed(3);
     });
   }
   function updateCarousel() {
@@ -1020,6 +1022,16 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
         onEnter: function () { li.classList.add('on'); },
         onLeaveBack: function () { li.classList.remove('on'); }
       });
+    });
+    /* Work cards: fly in from depth as the section scrolls into view, fanning out one after another. */
+    var workSlots = gsap.utils.toArray('#track .slot');
+    gsap.set(workSlots, { transformPerspective: 900, transformOrigin: '50% 60%' });
+    gsap.timeline({ scrollTrigger: { trigger: '#track', start: 'top 94%', end: 'top 30%', scrub: 1 } })
+      .fromTo(workSlots, { rotationY: 62, rotationX: 14, z: -320, x: 150, opacity: 0 },
+        { rotationY: 0, rotationX: 0, z: 0, x: 0, opacity: 1, ease: 'power2.out', stagger: 0.14, duration: 1 }, 0);
+    gsap.fromTo('.work-head', { y: 40, opacity: 0.2 }, {
+      y: 0, opacity: 1, ease: 'none',
+      scrollTrigger: { trigger: '.work-head', start: 'top 98%', end: 'top 62%', scrub: true }
     });
     gsap.fromTo('#wordmark', { yPercent: 24 }, {
       yPercent: 0, ease: 'none',
