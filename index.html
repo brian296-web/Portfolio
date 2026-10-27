@@ -679,6 +679,19 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
   var hasGsap = !!(window.gsap && window.ScrollTrigger);
   if (hasGsap) gsap.registerPlugin(ScrollTrigger);
 
+  /* Endless carousel: three copies of the card set, so the loop never has to glide back. */
+  var trackEl = document.getElementById('track'), CARDS = trackEl.children.length;
+  (function () {
+    var orig = Array.prototype.slice.call(trackEl.children), before = document.createDocumentFragment(), after = document.createDocumentFragment();
+    orig.forEach(function (s) {
+      var a = s.cloneNode(true), b = s.cloneNode(true);
+      a.setAttribute('aria-hidden', 'true'); b.setAttribute('aria-hidden', 'true');
+      before.appendChild(a); after.appendChild(b);
+    });
+    trackEl.insertBefore(before, trackEl.firstChild);
+    trackEl.appendChild(after);
+  })();
+
   var PALS = {
     night: makePal([[26, 32, 18], [62, 70, 34], [112, 112, 52], [170, 158, 78], [222, 204, 118], [255, 238, 176]], '236,220,140', '255,246,205'),
     moss: makePal([[20, 32, 22], [48, 66, 38], [92, 112, 56], [146, 166, 84], [204, 222, 128], [246, 252, 196]], '206,230,140', '250,255,214'),
@@ -917,7 +930,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
   window.addEventListener('resize', function () {
     clearTimeout(rt);
     rt = setTimeout(function () {
-      paintStatic(); fitWord(); updateCarousel();
+      paintStatic(); fitWord(); startMiddle(); updateCarousel();
       if (fallbackOn && reduce) live.forEach(function (L) { paintLive(L, L.t0); });
       if (hasGsap) ScrollTrigger.refresh();
     }, 150);
@@ -944,6 +957,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
 
   /* ---------- Carousel with 3D tilt ---------- */
   var track = document.getElementById('track'), slots = Array.prototype.slice.call(track.children);
+  function setW() { return slots[CARDS].offsetLeft - slots[0].offsetLeft; }
   var prev = document.getElementById('prev'), next = document.getElementById('next'), cur = document.getElementById('cur');
   function stepW() { return slots.length > 1 ? slots[1].offsetLeft - slots[0].offsetLeft : track.clientWidth; }
   function tilt() {
@@ -955,14 +969,12 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
       var a = Math.abs(d), card = s.firstElementChild;
       card.style.transformOrigin = d >= 0 ? '0% 50%' : '100% 50%';
       card.style.transform = 'rotateY(' + (-d * 34).toFixed(2) + 'deg) translateZ(' + (-a * 110).toFixed(1) + 'px) scale(' + (1 - Math.min(a, 1.5) * 0.05).toFixed(3) + ')';
-      card.style.opacity = Math.max(0.35, 1 - a * 0.22).toFixed(3);
+      card.style.opacity = (1 - 0.8 * Math.min(a, 1)).toFixed(3);
     });
   }
   function updateCarousel() {
-    var st = stepW(), max = track.scrollWidth - track.clientWidth;
-    var atStart = track.scrollLeft < 4, atEnd = track.scrollLeft >= max - 4;
-    prev.disabled = atStart; next.disabled = atEnd;
-    cur.textContent = atEnd ? String(slots.length) : String(Math.min(slots.length, Math.round(track.scrollLeft / st) + 1));
+    var st = stepW(), i = Math.round((track.scrollLeft - setW()) / st);
+    cur.textContent = String(((i % CARDS) + CARDS) % CARDS + 1);
     tilt();
   }
   var ticking = false;
@@ -970,9 +982,56 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     if (ticking) return; ticking = true;
     requestAnimationFrame(function () { ticking = false; updateCarousel(); });
   }, { passive: true });
-  function go(dir) { track.scrollBy({ left: dir * stepW(), behavior: reduce ? 'auto' : 'smooth' }); }
+  /* When scrolling settles outside the middle set, jump one set over. The copies look identical, so nothing visibly moves. */
+  var recentre = 0;
+  track.addEventListener('scroll', function () {
+    clearTimeout(recentre);
+    recentre = setTimeout(function () {
+      var w = setW();
+      if (track.scrollLeft < w * 0.5) track.scrollLeft += w;
+      else if (track.scrollLeft > w * 1.5) track.scrollLeft -= w;
+    }, 160);
+  }, { passive: true });
+  function startMiddle() { track.style.scrollSnapType = 'none'; track.scrollLeft = setW(); track.style.scrollSnapType = ''; }
+  function go(dir) {
+    glide(dir * stepW());
+    restartAuto();
+  }
   prev.addEventListener('click', function () { go(-1); });
   next.addEventListener('click', function () { go(1); });
+
+  /* One eased glide per step (0.9s), used by the buttons and by autoplay. */
+  var anim = 0;
+  function stopGlide() { cancelAnimationFrame(anim); track.style.scrollSnapType = ''; }
+  function glide(dx) {
+    cancelAnimationFrame(anim);
+    if (reduce) { track.scrollBy({ left: dx }); return; }
+    var from = track.scrollLeft, t0 = performance.now(), dur = 900;
+    track.style.scrollSnapType = 'none';
+    function f(now) {
+      var u = Math.min(1, (now - t0) / dur), e = u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2;
+      track.scrollLeft = from + dx * e;
+      if (u < 1) anim = requestAnimationFrame(f); else track.style.scrollSnapType = '';
+    }
+    anim = requestAnimationFrame(f);
+  }
+  ['wheel', 'touchstart', 'pointerdown'].forEach(function (ev) { track.addEventListener(ev, stopGlide, { passive: true }); });
+
+  /* Autoplay: one card every 4.5s. Pauses on hover, focus and touch, when the section is off screen or the tab is hidden. */
+  var autoTimer = 0, hold = false, seen = false;
+  function tickAuto() { if (!hold && seen && !document.hidden) glide(stepW()); }
+  function restartAuto() { clearInterval(autoTimer); if (!reduce) autoTimer = setInterval(tickAuto, 4500); }
+  var area = track.parentElement;
+  area.addEventListener('mouseenter', function () { hold = true; });
+  area.addEventListener('mouseleave', function () { hold = false; restartAuto(); });
+  area.addEventListener('focusin', function () { hold = true; });
+  area.addEventListener('focusout', function () { hold = false; restartAuto(); });
+  track.addEventListener('touchstart', function () { hold = true; }, { passive: true });
+  track.addEventListener('touchend', function () { setTimeout(function () { hold = false; restartAuto(); }, 3000); }, { passive: true });
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(function (es) { seen = es[0].isIntersecting; }, { threshold: 0.35 }).observe(track);
+  } else { seen = true; }
+  restartAuto();
 
   /* ---------- Copy email ---------- */
   var copyBtn = document.getElementById('copy'), addr = document.getElementById('addr'), note = document.getElementById('mail-note');
@@ -1024,7 +1083,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
       });
     });
     /* Work cards: fly in from depth as the section scrolls into view, fanning out one after another. */
-    var workSlots = gsap.utils.toArray('#track .slot');
+    var workSlots = gsap.utils.toArray('#track .slot').slice(CARDS, CARDS * 2);
     gsap.set(workSlots, { transformPerspective: 900, transformOrigin: '50% 60%' });
     gsap.timeline({ scrollTrigger: { trigger: '#track', start: 'top 94%', end: 'top 30%', scrub: 1 } })
       .fromTo(workSlots, { rotationY: 62, rotationX: 14, z: -320, x: 150, opacity: 0 },
@@ -1045,6 +1104,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
   applyTheme();
   scrollFx();
   fitWord();
+  startMiddle();
   updateCarousel();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { fitWord(); paintStatic(); if (hasGsap) ScrollTrigger.refresh(); });
 })();
