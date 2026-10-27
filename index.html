@@ -233,7 +233,7 @@ h2 {
   padding-block: 1.5rem 2rem; margin-block: -1.25rem -0.75rem; scrollbar-width: none; overscroll-behavior-x: contain;
 }
 .track::-webkit-scrollbar { display: none; }
-.slot { flex: 0 0 clamp(250px, 26vw, 330px); height: clamp(390px, 46vw, 460px); scroll-snap-align: start; perspective: 900px; }
+.slot { flex: 0 0 clamp(250px, 26vw, 330px); height: clamp(390px, 46vw, 460px); scroll-snap-align: center; perspective: 900px; }
 .card {
   position: relative; isolation: isolate; overflow: hidden; width: 100%; height: 100%;
   border-radius: 16px; background: var(--card); color: var(--night-fg);
@@ -247,12 +247,15 @@ h2 {
 .card-body { padding: 1.25rem 1.25rem 1.4rem; display: flex; flex-direction: column; gap: 0.55rem; }
 .card h3 { font-family: var(--display); font-weight: 400; font-size: 1.75rem; line-height: 1.1; letter-spacing: -0.01em; }
 .card p { font-size: 0.9375rem; line-height: 1.55; color: #dad7be; }
-.controls { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.75rem; }
-.circle { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--fg); color: var(--bg); cursor: pointer; transition: transform 0.4s var(--ease), opacity 0.3s; }
-.circle:hover:not(:disabled) { transform: scale(1.06); }
-.circle:disabled { background: var(--line); color: var(--muted); cursor: default; }
-.circle svg { width: 18px; height: 18px; }
-.count { margin-left: 0.5rem; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+.controls { display: flex; align-items: center; justify-content: center; gap: 1.1rem; margin-top: 1rem; }
+.circle { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--line); background: transparent; color: var(--fg); cursor: pointer; transition: background 0.35s var(--ease), color 0.35s var(--ease), border-color 0.35s var(--ease), transform 0.35s var(--ease); }
+.circle:hover { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.circle:active { transform: scale(0.94); }
+.circle svg { width: 18px; height: 18px; transition: transform 0.35s var(--ease); }
+#next:hover svg { transform: translateX(2px); }
+#prev:hover svg { transform: translateX(-2px); }
+.count { min-width: 4.5rem; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.9rem; letter-spacing: 0.12em; }
+.count #cur { color: var(--fg); }
 
 /* ---------- Path (experience) ---------- */
 .path { background: var(--path-band); padding-block: clamp(2.5rem, 5vw, 4rem) clamp(4.5rem, 9vw, 8rem); --yr-w: 7.5rem; --rail-x: calc(var(--yr-w) + 1.1rem); }
@@ -422,8 +425,8 @@ h2 {
     </div>
     <div class="controls">
       <button class="circle" id="prev" type="button" aria-label="Previous"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M16 10H5m4 4.5L4.5 10 9 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-      <button class="circle" id="next" type="button" aria-label="Next"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11m-4-4.5L15.5 10 11 14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <span class="count" aria-live="polite"><span id="cur">1</span> / 6</span>
+      <button class="circle" id="next" type="button" aria-label="Next"><svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10h11m-4-4.5L15.5 10 11 14.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
   </div>
 </section>
@@ -998,6 +1001,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
   /* ---------- Carousel with 3D tilt ---------- */
   var track = document.getElementById('track'), slots = Array.prototype.slice.call(track.children);
   function setW() { return slots[CARDS].offsetLeft - slots[0].offsetLeft; }
+  function cOff() { return (track.clientWidth - slots[0].offsetWidth) / 2; }
   var prev = document.getElementById('prev'), next = document.getElementById('next'), cur = document.getElementById('cur');
   function stepW() { return slots.length > 1 ? slots[1].offsetLeft - slots[0].offsetLeft : track.clientWidth; }
   function tilt() {
@@ -1005,7 +1009,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     /* Swing-door depth: the front card stays flat, cards to the right hinge away from it, the card you just passed swings out behind. */
     var st = stepW(), first = slots[0].offsetLeft;
     slots.forEach(function (s) {
-      var d = Math.max(-1.6, Math.min(2.4, (s.offsetLeft - first - track.scrollLeft) / st));
+      var d = Math.max(-2.4, Math.min(2.4, (s.offsetLeft - first - track.scrollLeft - cOff()) / st));
       var a = Math.abs(d), card = s.firstElementChild;
       card.style.transformOrigin = d >= 0 ? '0% 50%' : '100% 50%';
       card.style.transform = 'rotateY(' + (-d * 34).toFixed(2) + 'deg) translateZ(' + (-a * 110).toFixed(1) + 'px) scale(' + (1 - Math.min(a, 1.5) * 0.05).toFixed(3) + ')';
@@ -1013,7 +1017,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     });
   }
   function updateCarousel() {
-    var st = stepW(), i = Math.round((track.scrollLeft - setW()) / st);
+    var st = stepW(), i = Math.round((track.scrollLeft + cOff() - setW()) / st);
     cur.textContent = String(((i % CARDS) + CARDS) % CARDS + 1);
     tilt();
   }
@@ -1032,7 +1036,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
       else if (track.scrollLeft > w * 1.5) track.scrollLeft -= w;
     }, 160);
   }, { passive: true });
-  function startMiddle() { track.style.scrollSnapType = 'none'; track.scrollLeft = setW(); track.style.scrollSnapType = ''; }
+  function startMiddle() { track.style.scrollSnapType = 'none'; track.scrollLeft = setW() - cOff(); track.style.scrollSnapType = ''; }
   function go(dir) {
     glide(dir * stepW());
     restartAuto();
