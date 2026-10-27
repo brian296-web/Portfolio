@@ -120,7 +120,7 @@ h2 {
 /* ---------- Hero ---------- */
 .hero {
   overflow: hidden;
-  min-height: clamp(620px, 90svh, 880px);
+  min-height: clamp(500px, 70svh, 680px);
   display: flex;
   flex-direction: column;
 }
@@ -149,7 +149,7 @@ h2 {
 .nav li a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 0.85rem; color: var(--night-muted); font-size: 0.9375rem; text-decoration: none; transition: color 0.3s var(--ease); }
 .nav li a:hover { color: var(--night-fg); }
 
-.hero-copy { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: clamp(1.5rem, 6vh, 4.5rem); padding-bottom: clamp(2rem, 6vh, 3.5rem); }
+.hero-copy { will-change: transform, opacity; flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; padding-top: clamp(1.5rem, 6vh, 4.5rem); padding-bottom: 1.5rem; }
 .hero h1 {
   font-family: var(--display);
   font-weight: 500;
@@ -162,9 +162,9 @@ h2 {
 .hero h1 .line { display: block; }
 .hero .lede { margin-top: 1.5rem; color: #dcd8bd; font-size: 1.0625rem; text-shadow: 0 1px 24px rgba(0, 0, 0, 0.7); }
 .cta {
-  margin-top: auto;
-  display: inline-flex; align-items: center; gap: 1rem;
-  min-height: 52px; padding: 0.35rem 0.4rem 0.35rem 1.4rem;
+  margin-top: 1.75rem;
+  display: inline-flex; align-items: center; gap: 0.6rem;
+  min-height: 48px; padding: 0.3rem 0.3rem 0.3rem 1.15rem;
   border-radius: 999px;
   border: 1px solid var(--night-line);
   background: rgba(14, 20, 12, 0.6);
@@ -173,7 +173,7 @@ h2 {
   transition: background 0.4s var(--ease), border-color 0.4s var(--ease);
 }
 .cta:hover { background: rgba(236, 220, 140, 0.16); border-color: rgba(236, 220, 140, 0.5); }
-.cta .arrow { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--night-fg); color: #10140b; transition: transform 0.5s var(--ease); }
+.cta .arrow { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--night-fg); color: #10140b; transition: transform 0.5s var(--ease); }
 .cta:hover .arrow { transform: translateX(3px); }
 .cta .arrow svg { width: 18px; height: 18px; }
 
@@ -183,7 +183,7 @@ h2 {
 .hero-copy > .cta { animation-delay: 0.36s; }
 
 /* ---------- Work ---------- */
-.work { overflow: hidden; background: var(--band); padding-block: clamp(4.5rem, 9vw, 8rem); }
+.work { overflow: hidden; background: var(--band); padding-block: clamp(4.5rem, 9vw, 8rem) clamp(1.5rem, 3vw, 2.5rem); }
 .sandy {
   position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 22%, #000 72%, transparent 100%);
@@ -218,7 +218,7 @@ h2 {
 .count { margin-left: 0.5rem; color: var(--muted); font-variant-numeric: tabular-nums; font-size: 0.95rem; }
 
 /* ---------- Path (experience) ---------- */
-.path { background: var(--path-band); padding-block: clamp(4.5rem, 9vw, 8rem); --yr-w: 7.5rem; --rail-x: calc(var(--yr-w) + 1.1rem); }
+.path { background: var(--path-band); padding-block: clamp(2.5rem, 5vw, 4rem) clamp(4.5rem, 9vw, 8rem); --yr-w: 7.5rem; --rail-x: calc(var(--yr-w) + 1.1rem); }
 .path .grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr); gap: 3rem clamp(2rem, 6vw, 6rem); align-items: start; }
 .path-head { position: sticky; top: 2.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
 .path-head h2 { color: var(--night-fg); }
@@ -308,7 +308,6 @@ h2 {
   <div class="wrap">
     <nav class="nav" aria-label="Main">
       <a class="brand" href="#top">
-        <svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M3 23c7-1 6-8 11-9s4-7 11-10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="25" cy="4" r="1.8" fill="currentColor"/></svg>
         <span>Brian Villena</span>
       </a>
       <ul>
@@ -554,15 +553,18 @@ function terrainH(x, z) {
   return h;
 }
 function keyInterp(keys, t) {
+  /* Cubic Hermite through the keys with finite-difference tangents: continuous speed, no stop at each key. */
+  var n = keys.length;
   if (t <= keys[0][0]) return keys[0][1];
-  for (var i = 1; i < keys.length; i++) {
-    if (t <= keys[i][0]) {
-      var a = keys[i - 1], b = keys[i], u = (t - a[0]) / (b[0] - a[0]);
-      u = u * u * (3 - 2 * u);
-      return a[1] + (b[1] - a[1]) * u;
-    }
+  if (t >= keys[n - 1][0]) return keys[n - 1][1];
+  var i = 1;
+  while (t > keys[i][0]) i++;
+  function tan(k) {
+    var a = keys[Math.max(k - 1, 0)], b = keys[Math.min(k + 1, n - 1)];
+    return (b[1] - a[1]) / (b[0] - a[0]);
   }
-  return keys[keys.length - 1][1];
+  var k0 = keys[i - 1], k1 = keys[i], h = k1[0] - k0[0], u = (t - k0[0]) / h, u2 = u * u, u3 = u2 * u;
+  return (2 * u3 - 3 * u2 + 1) * k0[1] + (u3 - 2 * u2 + u) * h * tan(i - 1) + (-2 * u3 + 3 * u2) * k1[1] + (u3 - u2) * h * tan(i);
 }
 var K_HOVER = [[0, 5.5], [0.2, 7], [0.45, 15], [0.7, 8], [1, 11]];
 var K_LIFT = [[0, 14], [0.2, 12], [0.45, 7], [0.7, 10], [1, 26]];
@@ -848,7 +850,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     function loop(ts) {
       requestAnimationFrame(loop);
       if (document.hidden) return;
-      var due = !reduce && ts - last > 33;
+      var due = !reduce && ts - last > 24;
       if (!needs && !due) return;
       last = ts; time = reduce ? 0 : ts / 1000; U.uTime.value = time;
       place(); renderer.render(scene, camera); needs = false;
@@ -860,7 +862,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     if (hasGsap && !reduce) {
       gsap.to(state, {
         p: 1, ease: 'none',
-        scrollTrigger: { trigger: document.documentElement, start: 0, end: 'max', scrub: 1.1 },
+        scrollTrigger: { trigger: document.documentElement, start: 0, end: 'max', scrub: 1.8 },
         onUpdate: function () { needs = true; }
       });
     }
@@ -1068,7 +1070,7 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     if (!hasGsap || reduce) return;
     gsap.to('#hero-copy', {
       y: -70, opacity: 0, rotationX: 16, transformPerspective: 900, transformOrigin: '50% 100%', ease: 'none',
-      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom 30%', scrub: true }
+      scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom 30%', scrub: 0.9 }
     });
     var rail = document.getElementById('rail');
     gsap.fromTo(rail, { '--p': 0 }, {
@@ -1085,12 +1087,12 @@ function drawTerrain(ctx, W, H, dpr, P, pal, t, sk) {
     /* Work cards: fly in from depth as the section scrolls into view, fanning out one after another. */
     var workSlots = gsap.utils.toArray('#track .slot').slice(CARDS, CARDS * 2);
     gsap.set(workSlots, { transformPerspective: 900, transformOrigin: '50% 60%' });
-    gsap.timeline({ scrollTrigger: { trigger: '#track', start: 'top 94%', end: 'top 30%', scrub: 1 } })
-      .fromTo(workSlots, { rotationY: 62, rotationX: 14, z: -320, x: 150, opacity: 0 },
-        { rotationY: 0, rotationX: 0, z: 0, x: 0, opacity: 1, ease: 'power2.out', stagger: 0.14, duration: 1 }, 0);
+    gsap.timeline({ scrollTrigger: { trigger: '#track', start: 'top 98%', end: 'top 18%', scrub: 1.6 } })
+      .fromTo(workSlots, { rotationY: 46, rotationX: 10, z: -240, x: 110, opacity: 0 },
+        { rotationY: 0, rotationX: 0, z: 0, x: 0, opacity: 1, ease: 'sine.out', stagger: 0.1, duration: 1 }, 0);
     gsap.fromTo('.work-head', { y: 40, opacity: 0.2 }, {
       y: 0, opacity: 1, ease: 'none',
-      scrollTrigger: { trigger: '.work-head', start: 'top 98%', end: 'top 62%', scrub: true }
+      scrollTrigger: { trigger: '.work-head', start: 'top 100%', end: 'top 55%', scrub: 1.2 }
     });
     gsap.fromTo('#wordmark', { yPercent: 24 }, {
       yPercent: 0, ease: 'none',
